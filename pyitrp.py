@@ -1,28 +1,17 @@
 import numpy as np
-from pyproj import Proj
 
 def test():
 
-    x = np.arange(-2.5, 2.501, 0.02)
+    x = np.arange(-5, 5.01, 0.1)
     y = np.copy(x)
     xx, yy = np.meshgrid(x, y)
-    lons, lats = ITRPProj.geo_inverse(xx, yy)
-    climsit = ITRPCoef.evaluate(xx, yy, 2.75)
     
     import matplotlib.pyplot as plt
-    from mpl_toolkits.basemap import Basemap
-
-    plt.figure(figsize=(5, 4), dpi=300)
-    map = Basemap(epsg=ITRPProj.epsg, resolution="i", 
-                  height=2.*np.amax(x)*1.e6, width=2.*np.amax(y)*1.e6)
-    map.drawmapboundary(fill_color='0.2')
-    map.fillcontinents(color='0.75', lake_color='0.75', zorder=200)
-    map.drawcoastlines(linewidth=0.5, zorder=200)
-    im = map.imshow(climsit, vmin=0, vmax=5, cmap=plt.get_cmap("plasma"))
-    map.contour(lons, lats, climsit, linewidths=0.5, latlon=True, levels=np.arange(0, 6), colors="white")
-    plt.colorbar(im)
+    plt.figure()
+    plt.imshow(ITRPCoef.evaluate(xx, yy, 0))
+    plt.colorbar()
     plt.show()
-    
+
 class ITRPCoef(object):
     """ Container for coeficients describing spatial and temporal variations of the 
     Sea Ice Thickness Climatology """
@@ -87,31 +76,6 @@ class ITRPClimatology(object):
 
     def __init__(self):
         pass
-
-
-class ITRPProj(object):
-    """ Definition of the default ITRP projection and conversion between lat/lon and projection 
-    coordinates. The projection is defined as the NSIDC SSMI North grid.
-
-    Sources: 
-        https://epsg.io/3411
-        https://nsidc.org/data/atlas/epsg_3411.html
-    """
-    
-    # Projection parameters
-    epsg = 3411
-    proj4 = "+proj=stere +lat_0=90 +lon_0=-45 +lat_ts=70 +a=6378273 +rf=298.2794111 +units=m"
-    
-    def __init__(self):
-        pass
-
-    @classmethod
-    def geo_inverse(cls, x, y, unit="itrp"):
-        scaling = 1.e6
-        if unit == "m":
-            scaling = 1.0
-        proj = Proj(cls.proj4)
-        return proj(x*scaling, y*scaling, inverse=True)
 
 
 if __name__ == '__main__':
