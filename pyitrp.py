@@ -29,6 +29,9 @@ class ITRPCoef(object):
 
     # Time & Space Variables (Table 2 of publication)
 
+    # Statis term
+    A0 = 2.785
+
     # 1st order terms
     T = -0.079  # 0.007 1.000
     Y = -1.767  # 0.038 1.000
@@ -60,12 +63,12 @@ class ITRPCoef(object):
 
         # Convert time input for sin/cos
         tdeg = 2.0 * np.pi * t
-
+        
         # Conpute the terms of different order
-        t0 = 0.0
+        t0 = cls.A0
         t1 = cls.Y*y + cls.COS*np.cos(tdeg) + cls.SIN*np.sin(tdeg) + cls.T*t
-        t2 = cls.X2*x**2. + cls.Y2*y**2. + cls.COS2*np.cos(tdeg)**2. + cls.SIN2*np.sin(tdeg)**2. + cls.XSIN*x*np.sin(tdeg)
-        t3 = cls.X2Y*x**2.*y + cls.XY2*x*y**2. + cls.XT2*x*t**2 + cls.COS3*np.cos(tdeg)**3. + cls.SIN3*np.sin(tdeg)**3. 
+        t2 = cls.X2*x**2. + cls.Y2*y**2. + cls.COS2*np.cos(tdeg*2.) + cls.SIN2*np.sin(tdeg*2) + cls.XSIN*x*np.sin(tdeg)
+        t3 = cls.X2Y*x**2.*y + cls.XY2*x*y**2. + cls.XT2*x*t**2 + cls.COS3*np.cos(tdeg*3.) + cls.SIN3*np.sin(tdeg*3.)
 
         return t0+t1+t2+t3
 
