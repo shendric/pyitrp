@@ -101,18 +101,56 @@ class ITRPProj(object):
     # Projection parameters
     epsg = 3411
     proj4 = "+proj=stere +lat_0=90 +lon_0=-45 +lat_ts=70 +a=6378273 +rf=298.2794111 +units=m"
+    xy_scalefactor = 1.e6
     
-    def __init__(self):
-        pass
+    def __init__(self, lons, lats):
+        
+        self._lons = lons
+        self._lats = lats
+        self._xc, self._yc = self.geo_forward(lats, lons)
 
     @classmethod
     def geo_inverse(cls, x, y, unit="itrp"):
-        scaling = 1.e6
+        """ Returns longitude / latitude from polarstereographic (see cls.proj4)
+        coordinates """
         if unit == "m":
             scaling = 1.0
+        else:
+            scaling = cls.xy_scalefactor
         proj = Proj(cls.proj4)
         return proj(x*scaling, y*scaling, inverse=True)
 
+    @classmethod
+    def geo_forward(cls, lat, lon):
+        """ Returns the x, y coordinates (units: 1000 km) 
+        from latitude, longitude arrays """
+        proj = Proj(cls.proj4)
+        x, y = proj(lon, lat)
+        return x/cls.xy_scalefactor, y/cls.xy_scalefactor
+
+    @property
+    def xc(self):
+        return self._xc
+
+    @property
+    def yc(self):
+        return self._yc
+
+    @property
+    def lons(self):
+        return self._lons
+
+    @property
+    def lats(self):
+        return self._lats
+
+    @property
+    def width_m(self):
+        return 1.e6*(np.amax(self.xc)-np.amin(self.xc))
+
+    @property
+    def height_m(self):
+        return 1.e6*(np.amax(self.yc)-np.amin(self.yc))
 
 if __name__ == '__main__':
     test()
