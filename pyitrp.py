@@ -152,5 +152,49 @@ class ITRPProj(object):
     def height_m(self):
         return 1.e6*(np.amax(self.yc)-np.amin(self.yc))
 
+
+class ITRPTimeCoord(object):
+    
+    # Reference time (t=0)
+    epoch = datetime.datetime(2000, 1, 1)
+
+    @classmethod
+    def from_date_tuple(cls, year, month, day, hour=12):
+        """ Converts a date defined by year, month and day into 
+        ITRP time coordinate """
+        return cls.from_datetime(cls._tuple_to_dt(year, month, day, hour=hour))
+
+    @classmethod
+    def from_datetime(cls, dt):
+        """ Converts a datetime object into ITRP time coordinate """
+        start = datetime.date(dt.year, 1, 1).toordinal()
+        year_length = datetime.date(dt.year+1, 1, 1).toordinal() - start
+        return dt.year - cls.epoch.year + float(dt.toordinal() - start) / year_length
+
+    def __init__(self, arg, **kwargs):
+        
+        # Autodetect input 
+        if isinstance(arg, datetime.datetime):
+            self._coordinate = self.from_datetime(arg)
+            self._dt = arg
+        elif isinstance(arg, (tuple, list)):
+            self._coordinate = self.from_date_tuple(*arg, **kwargs)
+            self._dt = self._tuple_to_dt(*arg, **kwargs)
+        else: 
+            raise ValueError("Invalid input: Either datetime or list/tuple of type: [year, month, day]")
+    
+    @staticmethod
+    def _tuple_to_dt(year, month, day, hour=12):
+         return datetime.datetime(year, month, day, hour, 0, 0)
+
+    @property
+    def coordinate(self):
+        return self._coordinate
+
+    @property
+    def datetime(self):
+        return self._dt
+        
+
 if __name__ == '__main__':
     test()
