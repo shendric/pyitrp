@@ -1,25 +1,33 @@
 import numpy as np
 from pyproj import Proj
+import datetime
+
 
 def test():
 
+    # Get an articial lon/lat grid
     x = np.arange(-2.5, 2.501, 0.02)
     y = np.copy(x)
     xx, yy = np.meshgrid(x, y)
     lons, lats = ITRPProj.geo_inverse(xx, yy)
-    climsit = ITRPCoef.evaluate(xx, yy, 2.75)
+    
+    # Example call
+    clim = ITRPClimatology(lons, lats)
+    sit = clim.for_time([2015, 10, 1])
     
     import matplotlib.pyplot as plt
     from mpl_toolkits.basemap import Basemap
 
+
     plt.figure(figsize=(5, 4), dpi=300)
     map = Basemap(epsg=ITRPProj.epsg, resolution="i", 
-                  height=2.*np.amax(x)*1.e6, width=2.*np.amax(y)*1.e6)
+                  height=clim.grid.height_m, width=clim.grid.width_m)
     map.drawmapboundary(fill_color='0.2')
     map.fillcontinents(color='0.75', lake_color='0.75', zorder=200)
     map.drawcoastlines(linewidth=0.5, zorder=200)
-    im = map.imshow(climsit, vmin=0, vmax=5, cmap=plt.get_cmap("plasma"))
-    map.contour(lons, lats, climsit, linewidths=0.5, latlon=True, levels=np.arange(0, 6), colors="white")
+    im = map.imshow(sit, vmin=0, vmax=5, cmap=plt.get_cmap("plasma"))
+    map.contour(clim.grid.lons, clim.grid.lats, sit, latlon=True,
+                linewidths=0.5, levels=np.arange(0, 6), colors="white")
     plt.colorbar(im)
     plt.show()
     
