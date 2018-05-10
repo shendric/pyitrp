@@ -85,8 +85,29 @@ class ITRPClimatology(object):
 
     coef = ITRPCoef()
 
-    def __init__(self):
-        pass
+    def __init__(self, lons, lats, mask=None):
+        
+        # Save input parameters
+        self._mask = mask
+
+        # Compute variables
+        self._grid = ITRPProj(lons, lats)
+
+    def for_time(self, *args, **kwargs):
+        """ Return the sea ice thickness grid for a time coordinate (either
+        datetime of (year, month, day) with option hour keyword) """
+        itrp_time = ITRPTimeCoord(*args, **kwargs)
+        sit = self.coef.evaluate(self.grid.xc, self.grid.yc, itrp_time.coordinate)
+        return self._apply_mask(sit)
+
+    def _apply_mask(self, sit):
+        if self._mask is not None:
+            sit[np.where(self._mask)] = np.nan
+        return sit
+
+    @property
+    def grid(self):
+        return self._grid
 
 
 class ITRPProj(object):
